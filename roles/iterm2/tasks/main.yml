@@ -1,5 +1,13 @@
+- name: Check if iTerm2 is already installed
+  ansible.builtin.stat:
+    path: /Applications/iTerm.app
+  register: iterm_app
+  when: ansible_facts['os_family'] == 'Darwin'
+
 - name: Install iTerm2 (macOS only)
   community.general.homebrew_cask:
     name: iterm2
     state: present
-  when: ansible_facts['os_family'] == 'Darwin'
+  when:
+    - ansible_facts['os_family'] == 'Darwin'
+    - not iterm_app.stat.exists

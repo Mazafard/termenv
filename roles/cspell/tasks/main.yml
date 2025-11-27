@@ -36,7 +36,7 @@
 
 - name: Ensure CSpell keymaps are present in Neovim keymaps.lua
   ansible.builtin.blockinfile:
-    path: "{{ ansible_user_dir }}/.config/nvim/lua/core/keymaps.lua"
+    path: "{{ ansible_facts['user_dir'] }}/.config/nvim/lua/core/keymaps.lua"
     marker: "-- {mark} ANSIBLE MANAGED CSpell keymaps"
     insertafter: EOF
     prepend_newline: true
