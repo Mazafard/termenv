@@ -1,24 +1,38 @@
-- name: Ensure Node.js and npm are installed
-  package:
-    name: nodejs
+- name: Ensure Node.js and npm are installed on Linux
+  ansible.builtin.package:
+    name: "{{ item }}"
     state: present
   become: true
+  loop:
+    - nodejs
+    - npm
+  when: ansible_os_family != 'Darwin'
 
-- name: Install npm (optional if already included with nodejs)
-  package:
-    name: npm
-    state: present
-  become: true
+- name: Ensure Node.js is installed on macOS
+  community.general.homebrew:
+    name: node
+    state: latest
+  when: ansible_os_family == 'Darwin'
 
-- name: Install cspell globally
+- name: Install cspell globally on Linux
   community.general.npm:
     name: cspell
     global: true
     state: latest
   become: true
+  when: ansible_os_family != 'Darwin'
+
+- name: Install cspell globally on macOS
+  community.general.npm:
+    name: cspell
+    global: true
+    state: latest
+  when: ansible_os_family == 'Darwin'
 
 - name: Copy nvim cspell configuration
-  copy: src=nvim dest={{ lookup('env', 'HOME') }}/.config/.
+  ansible.builtin.copy:
+    src: nvim
+    dest: "{{ lookup('env', 'HOME') }}/.config/."
 
 - name: Ensure CSpell keymaps are present in Neovim keymaps.lua
   ansible.builtin.blockinfile:

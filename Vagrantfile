@@ -10,6 +10,7 @@ opts = GetoptLong.new(
 
 install_from_local = "no"
 do_install = "yes"
+repo_url = ENV.fetch('TERMFORGE_REPO', 'https://github.com/jazik/termforge.git')
 
 opts.each do |opt, arg|
   case opt
@@ -46,7 +47,7 @@ Vagrant.configure("2") do |config|
   end
 
   if install_from_local == "yes"
-    config.vm.synced_folder ".", "/home/vagrant/termenv", nfs_version: 4
+    config.vm.synced_folder ".", "/home/vagrant/termforge", nfs_version: 4
   end
 
   if do_install == "yes"
@@ -54,12 +55,12 @@ Vagrant.configure("2") do |config|
       config.vm.define distro do |install|
         if install_from_local == "no"
           install.vm.provision "shell", privileged: false, inline: <<-SHELL
-            git clone https://github.com/jazik/termenv.git
+            git clone #{repo_url} termforge
           SHELL
         end
         install.vm.provision "shell", privileged: false, inline: <<-SHELL
-          cd termenv
-          ansible-playbook -i hosts termenv.yml
+          cd termforge
+          ansible-playbook -i hosts termforge.yml
         SHELL
       end
     end

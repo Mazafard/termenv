@@ -1,20 +1,29 @@
-- name: Install tmux
-  package: name=tmux state=latest
+- name: Install tmux on Linux
+  ansible.builtin.package:
+    name: tmux
+    state: latest
   become: true
+  when: ansible_os_family != 'Darwin'
+
+- name: Install tmux on macOS
+  community.general.homebrew:
+    name: tmux
+    state: latest
+  when: ansible_os_family == 'Darwin'
 
 - name: Install Powerline Blue theme
-  get_url:
+  ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/jimeh/tmux-themepack/master/powerline/block/orange.tmuxtheme
     dest: ~/.tmux-orange.tmuxtheme
 
 - name: Source theme in .tmux.conf
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ lookup('env', 'HOME') }}/.tmux.conf"
     create: yes
     regexp: '.*tmuxtheme.*'
     line: 'source-file ${HOME}/.tmux-orange.tmuxtheme'
 
 - name: Set start window index from 1 in .tmux.conf
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ lookup('env', 'HOME') }}/.tmux.conf"
     line: 'set-option -g base-index 1'

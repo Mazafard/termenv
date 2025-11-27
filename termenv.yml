@@ -1,13 +1,1 @@
-- name: Set up local terminal environment
-  hosts: local
-  roles:
-    - {role: zsh, tags: ['zsh']}
-    - {role: oh-my-zsh, tags: ['oh-my-zsh']}
-    - {role: powerlevel10k, tags: ['powerlevel10k']}
-    - {role: zsh-dircolors-solarized, tags: ['zsh-dircolors-solarized']}
-    - {role: zsh-autosuggestions, tags: ['zsh-autosuggestions']}
-    - {role: zsh-syntax-highlighting, tags: ['zsh-syntax-highlighting']}
-    - {role: tmux, tags: ['tmux']}
-    - {role: fzf, tags: ['fzf']}
-    - {role: neovim, tags: ['neovim']}
-    - {role: cspell, tags: ['cspell']}
+- import_playbook: termforge.yml

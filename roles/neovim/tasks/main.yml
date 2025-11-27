@@ -1,23 +1,36 @@
-- name: Install neovim
-  package: name=neovim state=latest
+- name: Install neovim dependencies on Linux
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: latest
   become: true
+  loop:
+    - neovim
+    - ripgrep
+  when: ansible_os_family != 'Darwin'
 
 # Needed by telescope plugin for fuzzy greping
-- name: Install ripgrep
-  package: name=ripgrep state=latest
-  become: true
+- name: Install neovim dependencies on macOS
+  community.general.homebrew:
+    name: "{{ item }}"
+    state: latest
+  loop:
+    - neovim
+    - ripgrep
+  when: ansible_os_family == 'Darwin'
 
 - name: Check if nvim config already exist
-  stat:
+  ansible.builtin.stat:
     path: ~/.config/nvim/
   register: nvim_config_exists
 
 - name: Copy nvim configuration
-  copy: src=nvim dest={{ lookup('env', 'HOME') }}/.config/.
+  ansible.builtin.copy:
+    src: nvim
+    dest: "{{ lookup('env', 'HOME') }}/.config/."
   when: not nvim_config_exists.stat.exists
 
-- name: Add vim-tmux-navigationr configuration
-  lineinfile:
+- name: Add vim-tmux-navigation configuration
+  ansible.builtin.lineinfile:
     path: "{{ lookup('env', 'HOME') }}/.tmux.conf"
     create: yes
     line: "{{ item }}"

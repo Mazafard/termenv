@@ -1,183 +1,183 @@
-# termenv
+# TermForge
 
-Configuration of terminal environment with ansible playbook.
+> Forked from [jazik/termenv](https://github.com/jazik/termenv).
 
-The configuration contains very basic setup with:
-- [`zsh`](https://zsh.sourceforge.io/)
-- [`oh-my-zsh`](https://ohmyz.sh/)
-- [`PowerLevel10k`](https://github.com/romkatv/powerlevel10k)
-- [`zsh-dircolors-solarized`](https://github.com/joel-porquet/zsh-dircolors-solarized)
-- [`zsh-autosuggestions`](https://github.com/zsh-users/zsh-autosuggestions)
-- [`zsh-syntax-highlighting`](https://github.com/zsh-users/zsh-syntax-highlighting)
-- [`tmux`](https://github.com/tmux/tmux) with Powerline theme.
-- [`fzf`](https://github.com/junegunn/fzf) with [`fzf ohmyz plugin`](https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/fzf)
-- [`neovim`](https://neovim.io/) with couple of handy plugins inspired by
-  [`bcampolo/nvim-starter-kit`](https://github.com/bcampolo/nvim-starter-kit)
-- [`nerd-fonts`](https://www.nerdfonts.com)
-- [`cspell`](https://github.com/davidmh/cspell.nvim/tree/main)
+TermForge is an Ansible playbook that forges a full-featured terminal
+environment on Linux and macOS hosts. It keeps the original
+termenv spirit while adding macOS polish, automatic iTerm2 setup, and
+Kubernetes helper tooling that lights up as soon as `kubectl` is in your
+`PATH`.
 
-Inspired also by:
+## Highlights
+
+- **Shell stack** – `zsh`, `oh-my-zsh`, Powerlevel10k, color + autosuggest
+	plugins, and curated defaults.
+- **Terminal UX** – `tmux` with a powerline theme, `fzf`, custom keymaps, and
+	smart Neovim ↔ tmux navigation glue.
+- **Editor batteries** – Neovim + Lua config, Telescope/Ripgrep, Treesitter,
+	Copilot(optional), and CSpell ready to go.
+- **Fonts + UI** – Nerd Fonts installer, macOS font placement, automatic
+	iTerm2 install via Homebrew Cask.
+- **Kubernetes helpers** – `k9s`, `kubectx`, and `kubens` automatically
+	installed when `kubectl` is detected.
+
+Inspired by:
 - [Terminal History Auto Suggestions As You Type With Oh My Zsh](https://www.dev-diaries.com/blog/terminal-history-auto-suggestions-as-you-type/)
+- [bcampolo/nvim-starter-kit](https://github.com/bcampolo/nvim-starter-kit)
 
+## Prerequisites
 
-# Neovim Cheat Sheet
+Run the playbook with a user that has `sudo` privileges.
 
-This is very basic cheat sheet to get you started. For all mappings see the
-configuration files.
-
-| Key | Command | Key | Command |
-|-----|---------|-----|---------|
-| `<C-h>`| Jump to left window | `<Space>` | `<leader>` |
-| `<C-l>`| Jump to right window | `<leader>wq` | Save and quit |
-| `<C-j>`| Jump down | `<leader>qq` | Quite without saving |
-| `<C-k>`| Jump up | `<leader>ww` | Save |
-| `<leader>sv` | Split window vertically | `<leader>ee` | Toggle file explorer |
-| `<leader>sh` | Split window horizontally | `<leader>ff` | Find file |
-| `<leader>sx` | Close split window | `<leader>fg` | Life grep |
-| `:Git` | Git with Fugitive | `:Neogit` | Git with Neogit |
-| `<leader>al` | Git log | `<leader>ar` | Git log for selection |
-| `<leader>af` | Git log for file | `<leader>gb` | Git blame (inline) |
-| `<leader>ha` | Add file to quick list | `<leader>hh` | Show file quick list |
-| `<leader>h<1-9]` | Jump to file from quick list |
-| `<leader>gg` | Show definition | `<leader>gD`| Jump to declaration |
-| `<leader>gd`| Jump to definition | `<leader>gi`| Jump to implementation |
-| `<C-Space>`| Completition | `<leader>fw` | Grep word under cursor |
-| `:Copilot setup`| Configure Copilot | `:Copilot enable` | Enable Copilot |
-| `:CopilotChat` | Open Copilot chat window |
-| `<C-J>` | Accept Copilot suggestion |
-
-
-# Prerequisites
-
-The ansible script performs package installations. The user under which
-you execute the script needs to be in `sudoers`.
-
-## Fedora
+### Fedora
 
 ```
 sudo dnf install git ansible
 ```
 
-## Ubuntu
+### Ubuntu
 
 ```
 sudo apt-get update
 sudo apt-get install git ansible
 ```
 
-# Install
+### macOS
+
+Install Command Line Tools and [Homebrew](https://brew.sh/), then install
+Ansible and Git:
 
 ```
-git clone https://github.com/jazik/termenv.git
-cd termenv
-ansible-playbook -i hosts --ask-become-pass termenv.yml
+xcode-select --install
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install ansible git
 ```
 
-# Customization
+Homebrew is also required so TermForge can install `zsh`, `tmux`, `node`,
+`k9s`, `kubectx`, `kubens`, and iTerm2.
 
-All the roles are run by default. If you wish to install only some of
-the roles or skip some roles, use `ansible` `tags`, which are defined
-in [termenv.yml](termenv.yml).
-
-For example to skip `tmux` run:
+## Install
 
 ```
-ansible-playbook -i hosts termenv.yml --skip-tags tmux
+git clone https://github.com/<your-user>/termforge.git
+cd termforge
+ansible-playbook -i hosts --ask-become-pass termforge.yml
 ```
 
-Or to install only `tmux` run:
+> The legacy `termenv.yml` playbook now just imports `termforge.yml`, so
+> existing scripts keep working while you migrate.
+
+## Customization with Tags
+
+All roles are enabled by default. Use tags to skip or run a subset:
 
 ```
-ansible-playbook -i hosts termenv.yml --tags tmux
+ansible-playbook -i hosts termforge.yml --skip-tags tmux
+ansible-playbook -i hosts termforge.yml --tags "neovim,k8s-tools"
 ```
 
-# Fonts
+Tag names match the role names (see `termforge.yml`).
 
-The `nerd-fonts` tag installs latest version of Fira Mono Nerd Fonts.
+## Fonts
 
-If you are installing the playbook in a remote system, container or
-in a virtual machine, then note that the terminal will not display patched
-fonts unless you install the fonts in your local system.
-For how to configure your terminal to use the fonts see your terminal
-documentation.
-
-You can also use the playbook to install any other Nerd Font,
-just pass the name as an option:
+The `nerd-fonts` tag installs the latest Fira Mono Nerd Font by default. To
+install another Nerd Font:
 
 ```
 ansible-playbook -i hosts nerdfonts.yml -e "font_name=YourFontName"
 ```
 
-The `YourFontName` should be the name of the Nerd Font zip file without .zip.
-You can find it by checking the download link from
-[Nerd Fonts Downloads](https://www.nerdfonts.com/font-downloads).
+The `YourFontName` value is the Nerd Font zip filename without `.zip`. See the
+[Nerd Fonts download page](https://www.nerdfonts.com/font-downloads).
 
-# Neovim Copilot plugins
+On macOS fonts land in `~/Library/Fonts/<FontName>` and are immediately
+available, so `fc-cache` is not required.
 
-The Copilot and CopilotChat neovim plugins can be installed separately.
-This is to avoid spurious errors from the plugins when Copilot is not
-configured and used.
+## macOS + iTerm2
 
-To install the plugins run:
+When TermForge runs on macOS it automatically applies the `iterm2` tag and
+installs iTerm2 via Homebrew Cask. You can still target or skip the role:
+
+```
+ansible-playbook -i hosts termforge.yml --skip-tags iterm2
+ansible-playbook -i hosts termforge.yml --tags iterm2
+```
+
+After provisioning:
+- Launch iTerm2 → *Preferences → Profiles → Text* and select the Nerd Font you
+	installed (Fira Mono Nerd Font by default).
+- Toggle *Use ligatures* if you want stylistic glyphs.
+- If you sync settings, open *Preferences → General → Preferences* and point it
+	to your sync folder before rerunning the playbook.
+
+## Kubernetes helpers
+
+The `kubernetes-tools` role installs `k9s`, `kubectx`, and `kubens` whenever
+`kubectl` is already available. Nothing is installed if `kubectl` is missing,
+so your environment stays lean until you actually use Kubernetes.
+
+## Neovim Copilot
+
+Copilot/CopilotChat are optional to avoid noisy errors on fresh systems. To add
+them later:
 
 ```
 ansible-playbook -i hosts neovim-copilot.yml
 ```
 
-# Sample screen shots
+## Neovim Cheat Sheet
 
-![Zsh command line](../media/termenv.png?raw=true)
+| Key | Command | Key | Command |
+|-----|---------|-----|---------|
+| `<C-h>` | Jump to left window | `<Space>` | `<leader>` |
+| `<C-l>` | Jump to right window | `<leader>wq` | Save + quit |
+| `<C-j>` | Jump down | `<leader>qq` | Quit without saving |
+| `<C-k>` | Jump up | `<leader>ww` | Save |
+| `<leader>sv` | Split vertically | `<leader>ee` | Toggle file explorer |
+| `<leader>sh` | Split horizontally | `<leader>ff` | Find file |
+| `<leader>sx` | Close split | `<leader>fg` | Live grep |
+| `:Git` | Fugitive | `:Neogit` | Neogit |
+| `<leader>al` | Git log | `<leader>ar` | Git log (selection) |
+| `<leader>af` | Git log (file) | `<leader>gb` | Inline git blame |
+| `<leader>ha` | Add file to Harpoon | `<leader>hh` | Toggle Harpoon UI |
+| `<leader>gg` | LSP definition | `<leader>gD` | LSP declaration |
+| `<leader>gd` | Jump to definition | `<leader>gi` | Jump to implementation |
+| `<C-Space>` | Completion | `<leader>fw` | Grep word under cursor |
+| `:Copilot setup` | Configure Copilot | `:CopilotChat` | Chat window |
+| `<C-j>` | Accept Copilot suggestion |  |  |
 
-![Tmux](../media/termenv-tmux.png?raw=true)
+## Screenshots
 
-# Testing playbooks
+![TermForge prompt](../media/termenv.png?raw=true)
 
-## Docker/Podman/Moby
+![TermForge tmux](../media/termenv-tmux.png?raw=true)
 
-If you would like to see how the environment looks or you would like
-to experiment with the configuration, there is a [Dockerfile](Dockerfile)
-in the project repo to create the environment quickly:
+## Testing the playbooks
 
-For environment on Fedora:
+### Docker / Podman / Moby
 
-```
-docker build -t termenv . --build-arg DISTRO=fedora
-```
-
-Or for Ubuntu:
-
-```
-docker build -t termenv . --build-arg DISTRO=ubuntu
-```
-
-Then run the container:
-
-```
-docker run --rm -it termenv
-````
-
-The playbooks are mounted from current directory. If you want to mount the
-plaoybooks when running the container, you can use `-v` option:
+Use the [Dockerfile](Dockerfile) to spin up a disposable TermForge shell.
 
 ```
-docker run --rm -it -v .:/home/termenv/termenv:Z termenv
+docker build -t termforge . --build-arg DISTRO=fedora
+docker build -t termforge . --build-arg DISTRO=ubuntu
+docker run --rm -it termforge
+docker run --rm -it -v .:/home/termforge/termforge:Z termforge
 ```
 
-## With Vagrant
+### With Vagrant
 
-In order to run local tests install `vagrant` with both `libvirt` and
-`VirtualBox` providers. Check your host system distro guidelines how
-to install those.
+Install `vagrant`, plus `libvirt` and `VirtualBox` providers if you plan to use
+them.
 
-In `fedora` you can run following. Note that in order to install `VirtualBox` you
-will have to enable [RPMFusion](https://rpmfusion.org/Configuration/).
+Fedora quick-start (VirtualBox requires [RPMFusion](https://rpmfusion.org/Configuration/)):
 
 ```
 sudo dnf install vagrant vagrant-libvirt VirtualBox libvirt
 sudo usermod -a -G libvirt ${USER}
 ```
 
-When using `fedora` ensure that `nfs` is enabled in `libvirt` firewall zone:
+Allow NFS inside the `libvirt` firewall zone when using Fedora:
 
 ```
 sudo systemctl --now enable virtnetworkd.service
@@ -185,30 +185,18 @@ sudo firewall-cmd --permanent --zone=libvirt --add-service=nfs
 sudo firewall-cmd --reload
 ```
 
-To test the playbook and configuration there is [Vagrantfile](Vagrantfile)
-with two predefined configurations. One for `fedora` and one for `ubuntu`.
-There are also couple of custom options to run local tests or to have
-envs for manual testing.
+`Vagrantfile` exposes Fedora and Ubuntu definitions with a few handy flags:
 
 ```
 vagrant [--local=no|yes] [--do-install=yes|no] <command> [fedora|ubuntu]
 
---local
-   Run playbook from Github (no, default) or from local current
-   directory (yes)
-
---do-install
-   Install dependencies and run playbook (yes, default) or skip
-   installation (no) and just start machine for manual testing
-
-<command>
-   vagrant commands such as up, destroy, ssh etc
-
-fedora|ubuntu
-   Linux distro to deploy, if none is selected both are created
+--local       Run playbook from GitHub (no, default) or locally (yes)
+--do-install  Install dependencies on the guest (yes, default) or skip (no)
+<command>     Standard vagrant verbs (up, destroy, ssh, ...)
+fedora|ubuntu Target one distro; omit to manage both
 ```
 
-For example to run playbook for `fedora` from local repo:
+Example (local Fedora test run):
 
 ```
 vagrant --local=yes up fedora
@@ -216,7 +204,5 @@ vagrant ssh fedora
 vagrant destroy fedora
 ```
 
-The tests are not automated, nothing is really checked after playbook
-is executed. But provisioning of machine will fail if playbook fails.
-The configuration have to be then checked manually by ssh-ing to the
-machine and looking around.
+Provisioning fails fast if the Ansible run fails, so verify the resulting
+environment manually after the VM boots.

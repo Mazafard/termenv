@@ -6,15 +6,26 @@
   failed_when: executable_check.rc != 0
 
 # Needed by copilot
-- name: Install nodejs
-  package: name=nodejs state=latest
+- name: Install nodejs on Linux
+  ansible.builtin.package:
+    name: nodejs
+    state: latest
   become: true
+  when: ansible_os_family != 'Darwin'
+
+- name: Install nodejs on macOS
+  community.general.homebrew:
+    name: node
+    state: latest
+  when: ansible_os_family == 'Darwin'
 
 - name: Check if nvim copilot plugin is already installed
-  stat:
+  ansible.builtin.stat:
     path: ~/.config/nvim/plugins/copilot.lua
   register: nvim_copilot_config_exists
 
 - name: Copy nvim copilot configuration
-  copy: src=nvim dest={{ lookup('env', 'HOME') }}/.config/.
+  ansible.builtin.copy:
+    src: nvim
+    dest: "{{ lookup('env', 'HOME') }}/.config/."
   when: not nvim_copilot_config_exists.stat.exists

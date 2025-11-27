@@ -1,0 +1,5 @@
+- name: Install iTerm2 (macOS only)
+  community.general.homebrew_cask:
+    name: iterm2
+    state: present
+  when: ansible_os_family == 'Darwin'

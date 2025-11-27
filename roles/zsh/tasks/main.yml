@@ -1,10 +1,36 @@
-- name: Install zsh
-  package: name=zsh state=latest
+- name: Install zsh on Linux
+  ansible.builtin.package:
+    name: zsh
+    state: latest
   become: true
+  when: ansible_os_family != 'Darwin'
+
+- name: Install zsh on macOS
+  community.general.homebrew:
+    name: zsh
+    state: latest
+  when: ansible_os_family == 'Darwin'
+
+- name: Resolve zsh binary path
+  ansible.builtin.command: command -v zsh
+  register: zsh_path_lookup
+  changed_when: false
+
+- name: Ensure zsh is listed in /etc/shells on macOS
+  ansible.builtin.lineinfile:
+    path: /etc/shells
+    line: "{{ zsh_path_lookup.stdout }}"
+    state: present
+  become: true
+  when: ansible_os_family == 'Darwin'
 
 - name: Switch default shell to zsh
-  user: name={{ lookup('env', 'USER') }} shell=/usr/bin/zsh
+  ansible.builtin.user:
+    name: "{{ lookup('env', 'USER') }}"
+    shell: "{{ zsh_path_lookup.stdout | default('/usr/bin/zsh') }}"
   become: true
 
 - name: Copy minimal zshrc
-  copy: src=zshrc dest={{ lookup('env', 'HOME') }}/.zshrc
+  ansible.builtin.copy:
+    src: zshrc
+    dest: "{{ lookup('env', 'HOME') }}/.zshrc"

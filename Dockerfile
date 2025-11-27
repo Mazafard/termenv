@@ -15,7 +15,7 @@ RUN if [ "$DISTRO" = "fedora" ]; then \
     fi && \
     $CMD -y install ansible git sudo
 
-ARG USERNAME=termenv
+ARG USERNAME=termforge
 ARG USER_UID=2000
 ARG USER_GID=$USER_UID
 
@@ -31,8 +31,8 @@ WORKDIR /home/$USERNAME
 ENV TERM=xterm-256color
 ENV SHELL=/usr/bin/zsh
 
-RUN --mount=type=bind,source=.,target=/home/termenv/termenv \
-    cd termenv && \
-    ansible-playbook -i hosts termenv.yml
+RUN --mount=type=bind,source=.,target=/home/termforge/termforge \
+    cd termforge && \
+    ansible-playbook -i hosts termforge.yml
 
 CMD ["zsh"]

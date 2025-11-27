@@ -1,36 +1,50 @@
-- name: Install fontconfig
-  package: name=fontconfig state=latest
+- name: Install fontconfig on Linux
+  ansible.builtin.package:
+    name: fontconfig
+    state: latest
   become: true
+  when: ansible_os_family != 'Darwin'
+
+- name: Install fontconfig on macOS
+  community.general.homebrew:
+    name: fontconfig
+    state: latest
+  when: ansible_os_family == 'Darwin'
 
 - name: Define font download URL
-  set_fact:
+  ansible.builtin.set_fact:
     font_url: "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/{{ font_name }}.zip"
 
+- name: Determine font install directory
+  ansible.builtin.set_fact:
+    nerd_font_target_dir: "{{ (ansible_os_family == 'Darwin') | ternary(ansible_env.HOME + '/Library/Fonts/' + font_name, ansible_env.HOME + '/.local/share/fonts/' + font_name) }}"
+
 - name: Download the font archive
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ font_url }}"
     dest: "/tmp/{{ font_name }}.zip"
   delegate_to: localhost
 
 - name: Ensure the font directory exists
-  file:
-    path: "{{ ansible_env.HOME }}/.local/share/fonts/{{ font_name }}"
+  ansible.builtin.file:
+    path: "{{ nerd_font_target_dir }}"
     state: directory
   delegate_to: localhost
 
 - name: Extract the font archive
-  unarchive:
+  ansible.builtin.unarchive:
     src: "/tmp/{{ font_name }}.zip"
-    dest: "{{ ansible_env.HOME }}/.local/share/fonts/{{ font_name }}"
+    dest: "{{ nerd_font_target_dir }}"
     remote_src: yes
   delegate_to: localhost
 
 - name: Update font cache
-  command: fc-cache -fv
+  ansible.builtin.command: fc-cache -fv
   delegate_to: localhost
+  when: ansible_os_family != 'Darwin'
 
 - name: Remove the downloaded font archive
-  file:
+  ansible.builtin.file:
     path: "/tmp/{{ font_name }}.zip"
     state: absent
   delegate_to: localhost
